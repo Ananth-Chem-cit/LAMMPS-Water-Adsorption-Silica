@@ -1,0 +1,65 @@
+# Mixture Adsorption of H2O and CO2 in Silica Crack
+units real
+atom_style full
+boundary p p p
+
+read_data crack.data
+
+# Define force fields
+pair_style lj/cut/coul/long 12.0
+bond_style harmonic
+angle_style harmonic
+kspace_style pppm 1.0e-4
+
+# Atom masses
+mass 1 28.0855     # Si
+mass 2 15.9994     # O in silica
+mass 3 15.9994     # O in H2O/CO2
+mass 4 1.008       # H in H2O
+mass 5 12.011      # C in CO2
+
+# Pair coefficients (update with accurate values as needed)
+pair_coeff 1 1 0.001 3.5
+pair_coeff 1 2 0.001 3.0
+pair_coeff 1 3 0.01 3.1
+pair_coeff 1 4 0.01 2.5
+pair_coeff 1 5 0.01 3.3
+pair_coeff 2 2 0.06 3.165
+pair_coeff 3 3 0.15 3.0
+pair_coeff 4 4 0.02 1.0
+pair_coeff 5 5 0.07 3.5
+
+pair_modify mix arithmetic
+
+# Load molecules
+molecule h2omol H2O.template
+molecule co2mol CO2.template
+
+# Define region for GCMC insertions (modify as needed for your system size)
+region gcmcbox block -15 15 -6 6 -6 6 units box
+
+# Group mobile atoms (water + CO2 types)
+group mobile type 3 4 5
+
+# GCMC for H2O (molecule ID = 0)
+fix gcmcH2O mobile gcmc 100 10 100 0 12345 region gcmcbox mol h2omol 1 type 3 4 5
+fix_modify gcmcH2O energy yes pressure no
+
+# GCMC for CO2 (molecule ID = 1)
+fix gcmcCO2 mobile gcmc 100 10 100 1 67890 region gcmcbox mol co2mol 1 type 3 5
+fix_modify gcmcCO2 energy yes pressure no
+
+# Neighbor list and time integration (not really used in pure GCMC but required)
+neighbor 2.0 bin
+neigh_modify every 1 delay 0 check yes
+
+# Thermo settings
+timestep 1.0
+thermo 100
+
+# Output
+dump 1 all custom 200 dump.gcmc id mol type x y z
+dump_modify 1 sort id
+
+# Run GCMC simulation
+run 10000

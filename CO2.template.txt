@@ -1,0 +1,22 @@
+# CO2 molecule template
+3 atoms
+2 bonds
+1 angles
+
+Coords
+0.0000   0.0000   0.0000   2   # O
+1.1600   0.0000   0.0000   1   # C
+2.3200   0.0000   0.0000   2   # O
+
+Types
+2 1 2
+
+Charges
+-0.35 0.70 -0.35
+
+Bonds
+1 1 1 2
+2 1 2 3
+
+Angles
+1 1 1 2 3
